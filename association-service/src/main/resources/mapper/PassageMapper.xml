@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.feng.dao.PassageMapper">
+
+    <!-- 开启二级缓存 -->
+    <!--<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>-->
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.feng.entity.Passage">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="publisher" property="publisher"/>
+        <result column="source" property="source"/>
+        <result column="passage_type_id" property="passageTypeId"/>
+        <result column="club_id" property="clubId"/>
+        <result column="publish_time" property="publishTime"/>
+        <result column="click_num" property="clickNum"/>
+    </resultMap>
+
+
+    <resultMap id="infoResultMap" type="com.feng.dto.PassageFileDto">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="publisher" property="publisher"/>
+        <result column="source" property="source"/>
+        <result column="club_id" property="clubId"/>
+        <result column="publish_time" property="publishTime"/>
+        <result column="click_num" property="clickNum"/>
+        <result column="passage_type_id" property="passageTypeId"/>
+        <collection property="fileList" column="fileId" ofType="com.feng.entity.File" javaType="ArrayList">
+            <id column="fileId" property="id"/>
+            <result column="file_name" property="fileName"/>
+            <result column="file_path" property="filePath"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="passageListMap" type="com.feng.dto.PassageTypeDto">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="publisher" property="publisher"/>
+        <result column="source" property="source"/>
+        <result column="club_id" property="clubId"/>
+        <result column="publish_time" property="publishTime"/>
+        <result column="click_num" property="clickNum"/>
+        <result column="passage_type_id" property="passageTypeId"/>
+        <association property="passageType" javaType="com.feng.entity.PassageType">
+            <id column="passage_type_id" property="id"/>
+            <result column="type" property="type"/>
+        </association>
+    </resultMap>
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, title, content, publisher, source, passage_type_id, club_id, publish_time, click_num
+    </sql>
+
+
+    <select id="getInfoById" resultMap="infoResultMap" parameterType="integer">
+                  SELECT
+            p.*, f.file_name,
+            f.file_path,
+            f.id AS fileId
+        FROM
+            passage p
+        LEFT JOIN file f ON f.passage_id = p.id
+        WHERE p.id = #{id}
+    </select>
+
+    <select id="findPassage" resultMap="passageListMap" parameterType="com.feng.entity.Passage">
+        SELECT
+        p.*,
+        pt.type
+        FROM
+        passage p
+        INNER JOIN passage_type pt ON p.passage_type_id = pt.id
+        WHERE 1 > 0
+        <if test="passageTypeId !=null ">
+            AND p.passage_type_id = #{passageTypeId}
+        </if>
+        <if test="title != null and title != '' ">
+            AND p.title LIKE CONCAT('%', #{title},'%')
+        </if>
+        ORDER BY publish_time DESC
+    </select>
+
+    <select id="findSimplePassage" resultType="com.feng.entity.Passage">
+                        SELECT
+            p.title,
+            p.publish_time
+        FROM
+            passage p
+        INNER JOIN passage_type pt
+         <if test="passageTypeId != null">
+             ON p.passage_type_id = pt.id
+             AND p.passage_type_id = passageTypeId
+         </if>
+
+        ORDER BY
+            publish_time DESC
+     </select>
+
+    <insert id="add" useGeneratedKeys="true" keyProperty="id" keyColumn="id" parameterType="com.feng.entity.Passage">
+        INSERT INTO passage (
+            title,
+            content,
+            publisher,
+            source,
+            passage_type_id
+        )
+        VALUES
+            (#{title}, #{content},#{publisher},#{source}, #{passageTypeId})
+    </insert>
+</mapper>

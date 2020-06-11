@@ -1,0 +1,21 @@
+*.class
+target/
+out/
+
+# Eclipse project files
+.classpath
+.project
+.settings
+
+# IDEA metadata and output dirs
+*.iml
+*.ipr
+*.iws
+*.jar
+*.class
+.idea/
+
+# gitbook
+_book
+tmp
+/association-generator/src/main/java/com/feng/genTest/
